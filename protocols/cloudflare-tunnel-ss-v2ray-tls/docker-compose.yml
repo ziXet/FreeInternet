@@ -1,0 +1,38 @@
+version: "3.7"
+
+services:
+    ss-server:
+      image: acrisliu/shadowsocks-libev
+      command:
+          - "/start-server.sh"
+      volumes:
+          - ./scripts/start-server.sh:/start-server.sh:ro
+      restart: always
+      env_file: .env
+
+    cf-tunnel:
+      build:
+        context: ./cf
+        dockerfile: Dockerfile
+      restart: always
+      env_file: .env
+      entrypoint: ["/cf-tunnel.sh"]
+      depends_on:
+        - ss-nginx
+
+    ss-nginx:
+      build:
+          context: ./nginx
+          dockerfile: Dockerfile
+      volumes:
+        - ./nginx/templates:/etc/nginx/templates:ro
+        - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      restart: always
+      ports:
+        - "443:443/tcp"
+      env_file: .env
+      ulimits:
+        nofile:
+          soft: 65535
+          hard: 65535
+      entrypoint: ["/docker-entrypoint.sh", "nginx"]

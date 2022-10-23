@@ -1,0 +1,8 @@
+tunnel: {tunnel_uuid}
+credentials-file: /root/.cloudflared/{tunnel_uuid}.json
+ingress:
+  - hostname: {subdomain}
+    service: https://ss-nginx:443
+    originRequest:
+     noTLSVerify: true
+  - service: http_status:404
